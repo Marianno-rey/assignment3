@@ -1,1 +1,14 @@
-This is the README
+The main script both creates the dataset necessary and also runs the experiments. It can be run simply by invoking it at the command line i.e Python main.py
+The dataset base chosen is the sms_spam dataset which can be found on hugging face here https://huggingface.co/datasets/sms_spam
+The model I chose to use was BART-large-mnli.
+Essentially, this assignment is testing to see whether LLM's will recognize that they are being asked to classify a task without being explicitly told they are supposed to achieve that task. Presenting a model with spam messages and expecting it to output binary answers is a reasonable expectation to have given that there is likely a good amount of data contamination that the model already saw during training. 
+Now, presenting that model with a system prompt that asks it to classify the spam messages should in theory make the model perform close to perfect. I recognize that using a single task dataset like spam_sms is not the best example for instruction augmentation however the cost to have an LLM manually augment a multi-task dataset with instructions was prohibitive across large datasets.
+The following is a comparison between a fine-tune version of BART that contains instructions and a fine-tuned version on a the dataset not containing instructions.
+
+                    No instruction          With Instruction
+Training loss        0.014750               .019295
+
+Eval loss            0.012107               .086008
+
+We can clearly note here that the loss for the model fine-tuned on the augmented dataset actually performed worse which is counterintuitive. As mentioned earlier, it is
+likely that BART has already been trained on a subset or similar dataset to sms_spam. This would be an example of data contamination, where the dataset we are testing on was unknowingly already in the training set. We should also note that this was only run for 10 epochs and that on the instruction-augmented model the loss was actually still decreasing when it was training. It's possible that if we kept on training it then it could have improved its performance over the base dataset. Techniques like data augmentation using LLM generated instruction sets are very useful in training very specific types of models. Conversational AI like chatGPT are not conducive to this sort of technique because the desired outputs are fundamentally different. Apps like ChatGPT are fine-tuned to carry on human-like conversation where as in instruction-augmented fine-tuned models, we are likely training the model in such a way as to make it produce only the answer to a question but not sufficient output to carry it like a conversation. This sort of fine-tuning is especially exacerbated in cases like mine where we are essentially optimizing the model to produce a binary answer (either pos or neg on whether the text is spam or not) to a question. I should like in the future to explore more deeply into creating multi-task instruction-augmented datasets for the fine-tuning of open source models. 
